@@ -3,6 +3,7 @@
 # =================================
 add_executable(secret-santa
     src/main.cpp
+    src/santa.cpp
 )
 
 target_include_directories(secret-santa PRIVATE

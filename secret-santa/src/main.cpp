@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <secret-santa/santa.h>
+#include <secret-santa/santa_client.h>
 
 int main()
 {
@@ -16,7 +17,7 @@ int main()
   s.reg_user("Lucie", "Lucie");
   s.reg_user("Edou", "@Edou#1234");
   s.reg_user("Dwarf", "@Dwarf#1234");
-  s.reg_user("Cécile", "Cécile");
+  s.reg_user("Cécile", "@Panda#7732");
   s.reg_user("Sothir", "@Sothir#1234");
   s.reg_user("Simon", "@elliond#1234");
 
@@ -31,9 +32,13 @@ int main()
   s.exclude("Simon", "Vachequiri");
   s.exclude("Bastious", "Dwarf");
 
+
   auto r = s.draw();
   for (const auto& kv : r)
   {
     std::cout << kv.first << ": " << kv.second << std::endl;
   }
+
+  secret::santa::santa_client clt{"MjcyNzk3NjY5NjAzMTQ3Nzc3.Xdr4LA.8C6aXOCgvPBbEJBTBF_WAJiT2Tw", 2};
+  clt.run();
 }

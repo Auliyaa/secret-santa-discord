@@ -15,24 +15,36 @@ santa_t::santa_t()
   }
 }
 
-void santa_t::reg_user(const std::string& display_name, const std::string& discord_id)
+void santa_t::register_id(const std::string& id)
 {
-  _registered[display_name] = discord_id;
+  if (std::find(_registered.begin(), _registered.end(), id) == _registered.end())
+  {
+    _registered.push_back(id);
+  }
 }
 
 void santa_t::exclude(const std::string& user_a, const std::string& user_b)
 {
-  _excluded[user_a] = user_b;
+  for (const auto& e : _excluded)
+  {
+    if ((e.first == user_a && e.second == user_b) ||
+        (e.first == user_b && e.second == user_a))
+    {
+      return;
+    }
+  }
+  _excluded.push_back({user_a, user_b});
 }
 
-std::map<std::string, std::string> santa_t::draw() const
+void santa_t::draw()
 {
-  // list of users (keys from the _registered map) for easier iteration later-on
-  std::vector<std::string> users;
-  for (const auto& kv : _registered)
+  if (!_results.empty())
   {
-    users.emplace_back(kv.first);
+    return;
   }
+
+  // copy the list of users to get a modifiable version
+  std::vector<std::string> users = _registered;
 
   // will map each user to the list of potential users they can gift
   std::map<std::string, std::vector<std::string>> draw_pool;
@@ -66,8 +78,6 @@ std::map<std::string, std::string> santa_t::draw() const
   // for each user, draw a random target.
   // each time a target is drawn, remove it from all other users
   // in addition, remove the user from the target's targets to avoid bidirectional gifts.
-  std::map<std::string, std::string> result;
-
   while (!users.empty())
   {
     // sort users so that the one with the least possible matches is treated first
@@ -87,7 +97,7 @@ std::map<std::string, std::string> santa_t::draw() const
     auto tgt = draw_pool[src][static_cast<size_t>(rand()) % draw_pool[src].size()];
 
     // store result
-    result[users[0]] = tgt;
+    _results[users[0]] = tgt;
 
     // exclude tgt from all other users' draw pool since it already has a gift
     for (auto& kv : draw_pool)
@@ -109,6 +119,15 @@ std::map<std::string, std::string> santa_t::draw() const
     // remove the user before next iteration
     users.erase(users.begin());
   }
+}
 
-  return result;
+bool santa_t::is_registered(const std::string& id) const
+{
+  return std::find(_registered.begin(), _registered.end(), id) != _registered.end();
+}
+
+std::string santa_t::result(const std::string& id) const
+{
+  auto l = _results.find(id);
+  return (l == _results.end() ? "" : l->second);
 }

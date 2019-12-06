@@ -1,6 +1,8 @@
 #pragma once
 
 #include <map>
+#include <vector>
+#include <list>
 
 namespace secret { namespace santa {
 
@@ -10,16 +12,23 @@ public:
   santa_t();
   virtual ~santa_t() = default;
 
-  void reg_user(const std::string& display_name, const std::string& discord_id);
+  void register_id(const std::string& id);
   void exclude(const std::string& user_a, const std::string& user_b);
+  void draw();
 
-  std::map<std::string, std::string> draw() const;
+  inline std::vector<std::string> registered() const { return _registered; }
+  bool is_registered(const std::string& id) const;
+  inline std::list<std::pair<std::string, std::string>> exclusions() const { return _excluded; }
+  inline std::map<std::string, std::string> results() const { return _results; }
+  std::string result(const std::string& id) const;
 
 private:
   // display name -> discord id
-  std::map<std::string, std::string> _registered;
+  std::vector<std::string> _registered;
   // display name -> display name
-  std::map<std::string, std::string> _excluded;
+  std::list<std::pair<std::string, std::string>> _excluded;
+  // stores the result of the call to draw()
+  std::map<std::string, std::string> _results;
 };
 
 } } // secret::santa

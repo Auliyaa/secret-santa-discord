@@ -8,3 +8,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif()
 
 add_subdirectory(yourWaifu/sleepy-discord)
+
+# =================================
+# nlohmann::json
+# =================================
+add_library(nlohmann-json INTERFACE)
+target_include_directories(nlohmann-json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/nlohmann)

@@ -13,6 +13,7 @@ target_include_directories(secret-santa PRIVATE
 
 target_link_libraries(secret-santa PRIVATE
     sleepy-discord
+    nlohmann-json
 )
 
 install(TARGETS secret-santa DESTINATION bin)

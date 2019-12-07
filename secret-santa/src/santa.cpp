@@ -3,6 +3,9 @@
 #include <vector>
 #include <algorithm>
 
+#include <fstream>
+#include <json.hpp>
+
 using namespace secret::santa;
 
 santa_t::santa_t()
@@ -130,4 +133,29 @@ std::string santa_t::result(const std::string& id) const
 {
   auto l = _results.find(id);
   return (l == _results.end() ? "" : l->second);
+}
+
+void santa_t::save(const std::string& file, const std::map<std::string, std::string>& ids) const
+{
+  nlohmann::json j;
+  j["registered"] = _registered;
+  j["excluded"] = _excluded;
+  j["results"] = _results;
+  j["ids"] = ids;
+  std::ofstream out_file;
+  out_file.open(file, std::ios::out | std::ios::trunc);
+  out_file << j.dump();
+  out_file.close();
+}
+
+void santa_t::load(const std::string& file)
+{
+  std::ifstream in_file;
+  in_file.open(file, std::ios::in);
+  nlohmann::json j;
+  in_file >> j;
+  _registered = j["registered"].get<decltype(_registered)>();
+  _excluded = j["excluded"].get<decltype(_excluded)>();
+  _results = j["results"].get<decltype(_results)>();
+  in_file.close();
 }

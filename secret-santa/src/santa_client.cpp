@@ -55,6 +55,15 @@ void santa_client::onServer(SleepyDiscord::Server server)
       std::cerr << "Failed to locate master " << _master_username << " in server " << _server_name << std::endl;
       std::exit(1);
     }
+
+    // load previous results if available
+    try
+    {
+      _santa.load("/home/auliyaa/santa.json");
+    } catch(...)
+    {
+      std::cout << "-- failed to load results: starting from scratch" << std::endl;
+    }
   }
 }
 
@@ -78,6 +87,7 @@ void santa_client::handle_register(const SleepyDiscord::Message& message)
   // usage: -register [user [user [user...]]]
   for (const auto& mention : message.mentions)
   {
+    std::cout << "-- registering mention: " << mention.ID.string() << std::endl;
     _santa.register_id(mention.ID.string());
   }
 
@@ -85,6 +95,7 @@ void santa_client::handle_register(const SleepyDiscord::Message& message)
   for (const auto& reg : _santa.registered())
   {
     sendMessage(message.channelID, " -- " + username(reg));
+    sleep(500);
   }
 }
 
@@ -97,6 +108,8 @@ void santa_client::handle_exclude(const SleepyDiscord::Message& message)
     if (user_a.empty()) user_a = mention.ID.string();
     else user_b = mention.ID.string();
   }
+
+  std::cout << "-- registering exclude: " << user_a << " - " << user_b << std::endl;
 
   if (!user_a.empty() && !user_b.empty())
   {
@@ -117,6 +130,7 @@ void santa_client::handle_exclude(const SleepyDiscord::Message& message)
   for (const auto& exclusion : _santa.exclusions())
   {
     sendMessage(message.channelID, " -- " + username(exclusion.first) + " <-> " + username(exclusion.second));
+    sleep(500);
   }
 }
 
@@ -125,19 +139,27 @@ void santa_client::handle_notify()
   for (const auto& user_id : _santa.registered())
   {
     handle_santa(user_id);
-    sleep(2000);
+    sleep(500);
   }
+  auto dmc = createDirectMessageChannel(_master_id).cast().ID;
+  sendMessage(dmc, "Everybody has been notified !");
 }
 
 void santa_client::handle_draw()
 {
   _santa.draw();
+
+  std::cout << "-- saving results" << std::endl;
+  _santa.save("/home/auliyaa/santa.json", _id);
   sendMessage(createDirectMessageChannel(_master_id).cast().ID, "Results of the secret santa are ready !");
+  sleep(500);
   sendMessage(createDirectMessageChannel(_master_id).cast().ID, "Run the -notify command to send a private message to all members with their secret santa");
 }
 
 void santa_client::handle_santa(const std::string& user_id)
 {
+  std::cout << "-- got -santa command from " << user_id << std::endl;
+
   auto reg = _santa.registered();
   if (std::find(reg.begin(), reg.end(), user_id) == reg.end())
   {
@@ -145,7 +167,6 @@ void santa_client::handle_santa(const std::string& user_id)
   }
 
   auto dmc = createDirectMessageChannel(user_id).cast().ID;
-//  auto dmc = createDirectMessageChannel(_master_id).cast().ID;
   sendMessage(dmc, "Coucou " + username(user_id) + " ! Voici ton tirage pour le secret santa !\n" +
                    "Ton cadeau est destiné à: **" + username(_santa.result(user_id)) + "**.\n" +
                    "**Pour rappel** : Soit quelque chose de fabriqué, soit un cadeau en dessous de 10€.\n" +

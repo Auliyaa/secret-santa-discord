@@ -22,6 +22,9 @@ public:
   inline std::map<std::string, std::string> results() const { return _results; }
   std::string result(const std::string& id) const;
 
+  void save(const std::string& file, const std::map<std::string, std::string>& ids) const;
+  void load(const std::string& file);
+
 private:
   // display name -> discord id
   std::vector<std::string> _registered;

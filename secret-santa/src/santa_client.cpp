@@ -91,12 +91,13 @@ void santa_client::handle_register(const SleepyDiscord::Message& message)
     _santa.register_id(mention.ID.string());
   }
 
-  sendMessage(message.channelID, "Registered users:");
+  std::stringstream ss;
+  ss << "Registered users:" << std::endl;
   for (const auto& reg : _santa.registered())
   {
-    sendMessage(message.channelID, " -- " + username(reg));
-    sleep(500);
+    ss << " -- " + username(reg) << std::endl;
   }
+  sendMessage(message.channelID, ss.str());
 }
 
 void santa_client::handle_exclude(const SleepyDiscord::Message& message)
@@ -126,12 +127,13 @@ void santa_client::handle_exclude(const SleepyDiscord::Message& message)
     _santa.exclude(user_a, user_b);
   }
 
-  sendMessage(message.channelID, "List of exclusions:");
+  std::stringstream ss;
+  ss << "List of exclusions:" << std::endl;
   for (const auto& exclusion : _santa.exclusions())
   {
-    sendMessage(message.channelID, " -- " + username(exclusion.first) + " <-> " + username(exclusion.second));
-    sleep(500);
+    ss << " -- " + username(exclusion.first) + " <-> " + username(exclusion.second) << std::endl;
   }
+  sendMessage(message.channelID, ss.str());
 }
 
 void santa_client::handle_notify()
